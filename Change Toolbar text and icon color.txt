@@ -1,0 +1,15 @@
+       <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_48ssdp"
+        android:background="@color/toolbarColor"
+        app:titleTextColor="@color/toolbarTextAndIconColor"
+        app:theme="@style/ToolbarColoredBackArrow"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+on style
+ <!--Changing toolbar back button color-->
+    <style name="ToolbarColoredBackArrow" parent="AppTheme">
+        <item name="android:textColorSecondary">@color/toolbarTextAndIconColor</item>
+        <item name="actionMenuTextColor">@color/toolbarTextAndIconColor</item>
+    </style>
