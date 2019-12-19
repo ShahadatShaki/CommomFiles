@@ -1,12 +1,31 @@
 # CustomBottomNav
 
-#Gradle depandency 
+## Gradle depandency 
+implementation 'com.github.mreram:showcaseview:1.1'
+
+## Class
+```java
+import android.view.View;
+
+public class ToolTipsModel {
+
+    public String id, title, body;
+    public View view;
+
+    public ToolTipsModel(){}
+
+    public ToolTipsModel(View view, String id, String title, String body) {
+        this.id = id;
+        this.title = title;
+        this.body = body;
+        this.view = view;
+
+    }
+}
+```
 
 
-#Class
-
-
-#Code
+## Code
 ```java
     public static void showToolTips(Context context, ArrayList<ToolTipsModel> tooltips) {
 
