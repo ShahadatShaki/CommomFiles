@@ -1,4 +1,4 @@
-# CustomBottomNav
+# Show Tooltips
 
 ## Gradle depandency 
 implementation 'com.github.mreram:showcaseview:1.1'
