@@ -1,2 +1,9 @@
 Permission helper
 TedPermission - https://github.com/ParkSangGwon/TedPermission
+
+
+Multiple Image picker
+https://github.com/ParkSangGwon/TedImagePicker
+
+NB: <application ...
+    android:requestLegacyExternalStorage="true" ... >
