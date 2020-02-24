@@ -1,0 +1,48 @@
+
+//for image metadata
+implementation 'com.drewnoakes:metadata-extractor:2.13.0'
+
+<manifest
+      <application
+        android:requestLegacyExternalStorage="true"
+
+
+
+
+    private void getMetaDataFromImage(Uri imageUri) {
+
+
+        try {
+            File file = new File(imageUri.getPath());
+//            InputStream inputStream = getContentResolver().openInputStream(imageUri);
+            Metadata metadata = ImageMetadataReader.readMetadata(file);
+
+            String data = new String();
+
+            ArrayList<Directory> directories = new ArrayList<>();
+
+
+            for (Directory directory : metadata.getDirectories()) {
+                directories.add(directory);
+            }
+
+            for (int i = 0; i < directories.size(); i++) {
+
+                for (Tag tag : directories.get(i).getTags()) {
+
+                    if(!tag.getTagName().equalsIgnoreCase("Windows XP Comment")) {
+                        String tValue = tag.getTagName() + " : " + tag.getDescription() + "\n";
+                        data = tValue + data;
+                    }
+                }
+
+            }
+
+
+            Log.d("Metadata", "getMetaDataFromImage: " + data);
+            int i = 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
