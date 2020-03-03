@@ -1,0 +1,6 @@
+
+    protected void hideToolbarShadow(View appBar){
+        StateListAnimator stateListAnimator = new StateListAnimator();
+        stateListAnimator.addState(new int[0], ObjectAnimator.ofFloat(appBar, "elevation", 0));
+        appBar.setStateListAnimator(stateListAnimator);
+    }
