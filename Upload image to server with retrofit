@@ -1,0 +1,222 @@
+   
+   Upload only file
+   
+   private void uploadProfilePicture() {
+
+        MultipartBody.Part fileToUpload = null;
+        Log.d("profilePicFile", "profilePicFile: " + profilePicFile.getName());
+        Log.d("profilePicFile", "profilePicFile: " + profilePicFile.length() / 1024);
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("image/*"), profilePicFile);
+        fileToUpload = MultipartBody.Part.createFormData("image", profilePicFile.getName(), requestBody);
+
+        Call<Object> call;
+        call = ApiClient.getAPIInterface(context).uploadProfilePic(fileToUpload);
+
+
+        call.enqueue(new Callback<Object>() {
+            @Override
+            public void onResponse(Call<Object> call, retrofit2.Response<Object> response) {
+
+                if (response != null) {
+
+                    isProfilePicDone = true;
+                    checkUploadStatusAndExit();
+
+                } else {
+                    Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Object> call, Throwable t) {
+                Constants.dissmissProcess();
+                if (t.getMessage().contains("Unable to resolve host")) {
+                    Constants.showNoInternetSnackbar(context, b.getRoot());
+                    return;
+                }
+
+                if (t.getMessage().contains("timed out")) {
+                    uploadProfilePicture();
+                } else {
+                    if (t instanceof IOException) {
+                        Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Something went wrong, try again", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+
+
+    }
+    
+    //Multiple image 
+        private void sendReview() {
+
+
+        //<editor-fold desc="Checking is a valid review">
+        if (!Constants.isConnected(context)) {
+            Constants.showNoInternetSnackbar(context, b.mRecyclerView);
+            return;
+        }
+
+        if (b.rService.getRating() == 0) {
+            Constants.showSnakbar(b.mRecyclerView, "Please give rating");
+            return;
+        }
+
+//        if (b.etReview.getText().toString().length() < REVIEW_CHAR_LIMIT) {
+//            Constants.showSnakbar(b.mRecyclerView, "Your review should contain at least " + REVIEW_CHAR_LIMIT + " latter");
+//            return;
+//        }
+        //</editor-fold>
+
+        //<editor-fold desc="Handle image">
+        final HashMap<String, String> params = new HashMap<>();
+        ArrayList<MultipartBody.Part> imagesToUpload = new ArrayList<>();
+        ArrayList<File> imggeFiles = new ArrayList<>();
+        MultipartBody.Part fileToUpload = null;
+        File imageFile = null;
+        ArrayList<Integer> oldImageId = new ArrayList<>();
+
+        String protectImages = "";
+
+        int totalImageSize = 200;
+
+        try {
+            images = adapter.getCurrentDataset();
+
+            if (!images.isEmpty()) {
+                try {
+                    for (int i = 0; i < images.size(); i++) {
+                        File file = new File(images.get(i).path);
+
+                        if (images.get(i).path.contains("emulated")) {
+                            imageFile = Constants.compresssImage(context, file);
+                            totalImageSize += imageFile.length();
+                            imggeFiles.add(imageFile);
+                            RequestBody requestBody = RequestBody.create(MediaType.parse("image/*"), imageFile);
+                            imagesToUpload.add(MultipartBody.Part.createFormData("images[" + i + "]", imageFile.getName(), requestBody));
+                        } else {
+                            if (review != null) {
+                                for (int j = 0; j < review.getImages().size(); j++) {
+                                    if (images.get(i).path.equals(review.getImages().get(j).getImageUrl())) {
+                                        oldImageId.add(review.getImages().get(j).getId());
+                                        protectImages = protectImages + review.getImages().get(j).getId()+",";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(context, "Unable to upload a image, The image file may damaged.", Toast.LENGTH_SHORT).show();
+                    Crashlytics.logException(e);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //</editor-fold>
+
+
+        showCustomDialogForCancalbleLoading(context, "Submitting your review...");
+
+
+        params.put("merchant_id", merchantProfile.getId());
+        params.put("body", b.etReview.getText().toString().trim());
+        params.put("rating", String.valueOf(b.rService.getRating()));
+        params.put("protect_images", protectImages);
+
+
+        Call<ModelResponsePOST<Review>> call;
+        if(review!=null) {
+            call = ApiClient
+                    .getAPIInterfaceProcess(context, totalImageSize / 10)
+                    .updateReview(review.getId(), imagesToUpload, params);
+        }else {
+            call = ApiClient
+                    .getAPIInterfaceProcess(context, totalImageSize / 10)
+                    .giveReview(imagesToUpload, params);
+        }
+        call.enqueue(new Callback<ModelResponsePOST<Review>>() {
+            @Override
+            public void onResponse(Call<ModelResponsePOST<Review>> call,
+                                   Response<ModelResponsePOST<Review>> response) {
+
+//                Log.d(TAG, "onResponse: "+ new Gson().toJson(response));
+                try {
+                    dialog.dismiss();
+                }catch (Exception e){}
+
+                if (response.code() > 199 && response.code() < 300) {
+                    if(sendNotification){
+                        new NotificationHandle(context,"review",response.body().getObject().getId());
+                    }
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("review", true);
+                    setResult(119, resultIntent);
+                    finish();
+
+                } else if (response.code() > 399 && response.code() < 500) {
+                    try {
+                        Snackbar.make(b.mRecyclerView, "Sorry Something went wrong", 3000)
+                                .setAction("Try Again", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        sendReview();
+                                    }
+                                }).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    try {
+                        Snackbar.make(b.mRecyclerView, "Sorry Something went wrong with our server, We will be back", 3000)
+                                .setAction("Ok", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        finish();
+                                        overridePendingTransition(R.anim.stable, R.anim.bottom_down);
+
+                                    }
+                                }).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ModelResponsePOST<Review>> call, Throwable t) {
+
+                Log.d(TAG, "onFailure: "+t.getLocalizedMessage());
+                try {
+                    dialog.dismiss();
+                }catch (Exception e){}
+
+                if (t.getMessage().contains("Unable to resolve host")) {
+                    Constants.showNoInternetSnackbar(context, b.mRecyclerView);
+                    return;
+                }
+                if (t.getMessage().contains("timed out")) {
+                    sendReview();
+                } else {
+                    if (t instanceof IOException) {
+                        Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Something went wrong, try again", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+            }
+
+        });
+
+
+    }
+
