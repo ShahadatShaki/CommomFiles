@@ -1,0 +1,35 @@
+
+    //image slider library
+    implementation 'androidx.exifinterface:exifinterface:1.1.0'
+    implementation 'com.github.simiansim:AndroidImageSlider:master-SNAPSHOT'
+    
+    //xml
+    
+                <com.daimajia.slider.library.SliderLayout
+                android:id="@+id/bannerSlider"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_230ssdp"
+                android:layout_marginStart="@dimen/_16ssdp"
+                android:layout_marginTop="@dimen/_10ssdp"
+                android:layout_marginEnd="@dimen/_16ssdp"
+                android:background="@color/white" />
+                
+    //code
+            b.bannerSlider.removeAllSliders();
+        int num_of_pages = images.size();
+
+        for (int i = 0; i < num_of_pages; i++) {
+
+            try {
+                DefaultSliderView textSliderView = new DefaultSliderView(context);
+                // initialize a SliderLayout
+                textSliderView.image(images.get(i))
+                        .setScaleType(BaseSliderView.ScaleType.CenterCrop);
+
+                b.bannerSlider.addSlider(textSliderView);
+                b.bannerSlider.setPresetTransformer(SliderLayout.Transformer.Default);
+                b.bannerSlider.setDuration(4000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
