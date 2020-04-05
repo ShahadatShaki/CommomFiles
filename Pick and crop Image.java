@@ -17,6 +17,7 @@ implementation 'com.linchaolong.android:imagepicker:1.5'
 
            //    activity code
 final int PROFILE_PIC_IMAGE = 23;
+ImagePicker imagePicker;
 public void selectProfilePic(int type) {
 
         //<editor-fold desc="Camera Permission">
