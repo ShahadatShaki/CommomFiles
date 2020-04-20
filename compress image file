@@ -1,0 +1,26 @@
+    //for compress image file
+    implementation 'id.zelory:compressor:2.1.0'
+    
+        public static File compresssImage(Context context, File accualImageFile) {
+        File file = null;
+        int fileLen = (int) (accualImageFile.length() / 1024);
+        int convertQuality = 75;
+
+        if (fileLen > 10000) {
+            convertQuality = 30;
+        } else if (fileLen > 3000)
+            convertQuality = 50;
+
+        try {
+            file = new Compressor(context)
+                    .setMaxWidth(1080)
+                    .setQuality(convertQuality)
+                    .setDestinationDirectoryPath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/Happihub").getAbsolutePath())
+                    .compressToFile(accualImageFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return file;
+    }
